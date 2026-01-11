@@ -1,0 +1,17 @@
+name: base
+channels:
+  - defaults
+dependencies:
+  - pandas
+  - numpy
+  - networkx
+  - pulp
+  - scipy
+  - streamlit
+  - plotly
+  - pydeck
+  - pytest
+  - pytest-cov
+  - hypothesis
+  - pip:
+      - pyvis
