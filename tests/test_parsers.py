@@ -103,6 +103,18 @@ def test_parse_kd_prec():
     base_path = "/workspaces/bz-st/data/minelib/kd/kd.prec"
     pm = parse_precedence_file(base_path)
     assert len(pm.precedences) == 14153
+    
+    # 18 1 0
+    assert 18 in pm.precedences
+    assert pm.precedences[18] == [0]
+    
+    import networkx as nx
+    G = pm.to_networkx()
+    assert G.has_edge(0, 18)
+    
+    ancestors = nx.ancestors(G, 18)
+    assert 0 in ancestors
+    assert ancestors == {0}
 
 def test_parse_kd_upit():
     base_path = "/workspaces/bz-st/data/minelib/kd/kd.upit"
