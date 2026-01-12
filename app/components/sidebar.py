@@ -2,7 +2,13 @@ import streamlit as st
 
 def render_dataset_selector(available_datasets):
     st.sidebar.header("Dataset Selection")
-    return st.sidebar.selectbox("Choose a dataset", available_datasets)
+    # Default to 'zuck_small' when available for reproducible UI startup
+    default_index = 0
+    try:
+        default_index = available_datasets.index('zuck_small')
+    except ValueError:
+        default_index = 0
+    return st.sidebar.selectbox("Choose a dataset", available_datasets, index=default_index)
 
 def render_instance_summary(df, om, config):
     if df is None:

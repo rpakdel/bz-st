@@ -196,7 +196,7 @@ def render_solver_settings(df=None, pm=None, om=None, config=None):
 
     # Algorithm Parameters
     c1, c2, c3, c4 = st.columns(4)
-    max_iter = c1.number_input("Max Iterations", min_value=1, max_value=1000, value=100)
+    max_iter = c1.number_input("Max Iterations", min_value=1, max_value=1000, value=10)
     epsilon = c2.number_input("Epsilon (Tolerance)", min_value=1e-9, max_value=1e-1, value=1e-6, format="%.1e")
     solver = c3.selectbox("LP Master Solver", ["CBC (Native)", "CPLEX (Future)"])
     algorithm = c4.selectbox(
