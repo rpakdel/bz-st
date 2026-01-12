@@ -23,6 +23,7 @@ def main():
     profits = data['profits']
     eps = data['eps']
     max_iters = data['max_iters']
+    algorithm = data.get('algorithm', 'min_cut')  # Default to min_cut for backward compatibility
     status_file = Path(data['status_file'])
     result_file = Path(data['result_file'])
 
@@ -37,7 +38,7 @@ def main():
     # Profits dict
     profits_dict = {idx: p for idx, p in enumerate(profits)}
 
-    controller = BZController(n_blocks=n_blocks, precedence_graph=G, profits=profits_dict, eps=eps, max_iters=max_iters)
+    controller = BZController(n_blocks=n_blocks, precedence_graph=G, profits=profits_dict, eps=eps, max_iters=max_iters, algorithm=algorithm)
 
     def cb(entry):
         status = {

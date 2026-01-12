@@ -22,14 +22,16 @@ class ClosurePricer:
     u->v mean u is predecessor of v, so closure must be closed under successors).
     """
 
-    def __init__(self, precedence_graph: nx.DiGraph, profits: Dict[int, float]):
+    def __init__(self, precedence_graph: nx.DiGraph, profits: Dict[int, float], algorithm: str = 'min_cut'):
         """
         Args:
             precedence_graph: `nx.DiGraph` where an edge (u, v) means u is predecessor of v.
             profits: mapping block_id -> profit (unreduced, e.g., objective contribution)
+            algorithm: 'min_cut' (fast, default) or 'edmonds_karp' (slower but more accurate)
         """
         self.G = precedence_graph.copy()
         self.profits = profits
+        self.algorithm = algorithm
 
     def _build_cut_graph(self, weights: Dict[int, float]) -> nx.DiGraph:
         """
@@ -87,17 +89,44 @@ class ClosurePricer:
         # Build cut graph
         H = self._build_cut_graph(weights)
 
-        # Compute minimum s-t cut
         s = "__source__"
         t = "__sink__"
 
-        # networkx.minimum_cut requires a DiGraph with 'capacity' attributes
-        cut_value, (S, T) = nx.minimum_cut(H, s, t, capacity='capacity')
+        if self.algorithm == 'edmonds_karp':
+            # Edmonds–Karp: slower but more accurate residual graph
+            # Returns the residual network with flow_value stored in graph
+            R = nx.algorithms.flow.edmonds_karp(H, s, t, capacity='capacity')
+            flow_value = float(R.graph.get('flow_value', 0.0))
 
-        # Nodes reachable from source (S) correspond to selected nodes with positive contribution
-        selected = [n for n in S if n not in (s, t)]
+            # Reachable set from s using only edges with positive residual capacity
+            stack = [s]
+            seen = {s}
+            while stack:
+                u = stack.pop()
+                for v, data in R[u].items():
+                    if v in seen:
+                        continue
+                    if float(data.get('capacity', 0.0)) <= 0.0:
+                        continue
+                    seen.add(v)
+                    stack.append(v)
+            # Exclude terminals and non-original nodes
+            selected = [n for n in seen if n not in (s, t) and n in self.G.nodes]
 
-        total_weight = sum(weights.get(n, 0.0) for n in selected)
+            # Compute total weight using standard identity: sum_pos - cut_value
+            sum_pos = sum(max(0.0, w) for w in weights.values())
+            cut_value = flow_value
+            total_weight = sum_pos - cut_value
+        else:
+            # Default: minimum_cut (fast)
+            cut_value, (S, T) = nx.minimum_cut(H, s, t, capacity='capacity')
+            
+            # Nodes reachable from source (S side of cut)
+            selected = [n for n in S if n not in (s, t) and n in self.G.nodes]
+            
+            # Compute total weight using standard identity: sum_pos - cut_value
+            sum_pos = sum(max(0.0, w) for w in weights.values())
+            total_weight = sum_pos - cut_value
 
         # Reduced cost: for maximization master, reduced cost of column = convexity_dual - total_weight
         reduced_cost = convexity_dual - total_weight

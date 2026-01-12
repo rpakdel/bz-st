@@ -17,9 +17,23 @@ class BZController:
     or `max_iters` is reached.
     """
 
-    def __init__(self, n_blocks: int, precedence_graph: nx.DiGraph, profits: Dict[int, float], eps: float = 1e-6, max_iters: int = 50, max_columns: Optional[int] = None, logger: Optional[logging.Logger] = None):
+    def __init__(self, n_blocks: int, precedence_graph: nx.DiGraph, profits: Dict[int, float], eps: float = 1e-6, max_iters: int = 50, max_columns: Optional[int] = None, logger: Optional[logging.Logger] = None, algorithm: str = 'min_cut'):
+        """
+        Args:
+            n_blocks: total number of blocks in the mine
+            precedence_graph: directed graph where edge (u, v) means u precedes v
+            profits: mapping block_id -> profit (objective contribution)
+            eps: tolerance for reduced cost negativity
+            max_iters: maximum column generation iterations
+            max_columns: optional limit on total columns in master
+            logger: optional logger instance
+            algorithm: 'min_cut' (fast, default) or 'edmonds_karp' (slow, more accurate)
+                      Used by pricer for maximum-weight closure computation.
+                      'min_cut' is faster but may slightly underapproximate.
+                      'edmonds_karp' builds residual graph for better accuracy.
+        """
         self.master = MasterProblem(n_blocks=n_blocks)
-        self.pricer = ClosurePricer(precedence_graph=precedence_graph, profits=profits)
+        self.pricer = ClosurePricer(precedence_graph=precedence_graph, profits=profits, algorithm=algorithm)
         self.eps = eps
         self.max_iters = max_iters
         self.max_columns = max_columns

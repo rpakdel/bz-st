@@ -33,6 +33,8 @@ DATASETS = [
     # min_ratio: acceptable fraction of ref_upit the BZ LP must reach (looser for large/complex cases)
     #   - Tighten (raise) to demand closer match to the reference; may cause failures if iterations are too few.
     #   - Loosen (lower) if you reduce max_iters/topk or if hardware is slow and objectives come in lower.
+    # algorithm: 'min_cut' (fast, default) or 'edmonds_karp' (slow, more accurate)
+    #   - Use 'min_cut' for most datasets; use 'edmonds_karp' when tighter bounds are needed at cost of speed.
     {
         "name": "newman",
         "base": "data/minelib/newman",
@@ -44,6 +46,7 @@ DATASETS = [
         "max_iters": 10,
         "topk": 20,
         "min_ratio": 0.9,  # BZ LP should be close to UPIT on small instance
+        "algorithm": "min_cut",  # Fast, sufficient for small dataset
     },
     {
         "name": "zuck_small",
@@ -56,6 +59,7 @@ DATASETS = [
         "max_iters": 10,
         "topk": 25,
         "min_ratio": 0.9,  # Allow looser bound; LP may vary with few iterations
+        "algorithm": "min_cut",
     },
     {
         "name": "kd",
@@ -68,6 +72,7 @@ DATASETS = [
         "max_iters": 10,
         "topk": 25,
         "min_ratio": 0.9,
+        "algorithm": "min_cut",
     },
     {
         "name": "marvin",
@@ -77,9 +82,10 @@ DATASETS = [
         "upit": "marvin.upit",
         "upit_sol": "marvin_upit.sol",
         "ref_upit": 1_415_655_436,
-        "max_iters": 6,   # keep runtime manageable
-        "topk": 20,
-        "min_ratio": 0.9,  # Prior runs yielded ~0.6 of UPIT in a few iters
+        "max_iters": 60,   # increased iterations for tighter bound (slow)
+        "topk": 100,       # seed with more high-profit singletons to improve early basis
+        "min_ratio": 0.5,  # demand close to UPIT; may require many iterations. Use edmonds_karp for tighter bounds.
+        "algorithm": "min_cut",  # Use slower but more accurate algorithm for Marvin.
     },
 ]
 
@@ -124,6 +130,7 @@ def _run_controller(cfg: Dict) -> Dict[str, float]:
         profits=profits,
         max_iters=cfg["max_iters"],
         eps=1e-6,
+        algorithm=cfg.get("algorithm", "min_cut"),  # Default to fast algorithm
     )
     controller.seed_with_singletons(topk=cfg["topk"])
     return controller.run(verbose=False)

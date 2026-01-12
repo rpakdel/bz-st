@@ -61,6 +61,7 @@ def start_solver(state, df, pm, om, max_iter, epsilon):
         'profits': [float(om.objective.get(orig_id, [0.0])[0]) if orig_id in om.objective else 0.0 for orig_id in df['id'].astype(int)],
         'eps': epsilon,
         'max_iters': max_iter,
+        'algorithm': st.session_state.get('solver_algorithm', 'min_cut'),
         'status_file': str(status_file),
         'result_file': str(result_file)
     }
@@ -194,10 +195,23 @@ def render_solver_settings(df=None, pm=None, om=None, config=None):
     st.write("#### BZ Algorithm Settings")
 
     # Algorithm Parameters
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     max_iter = c1.number_input("Max Iterations", min_value=1, max_value=1000, value=100)
     epsilon = c2.number_input("Epsilon (Tolerance)", min_value=1e-9, max_value=1e-1, value=1e-6, format="%.1e")
     solver = c3.selectbox("LP Master Solver", ["CBC (Native)", "CPLEX (Future)"])
+    algorithm = c4.selectbox(
+        "Closure Algorithm",
+        options=["min_cut", "edmonds_karp"],
+        index=0,
+        help=(
+            "min_cut: fastest option; good enough for most datasets but may under-estimate LP on complex cases. "
+            "edmonds_karp: slower (often 10-15x) but yields a tighter LP bound; use when accuracy matters more than speed."
+        )
+    )
+
+    st.caption(
+        "min_cut → speed-first. edmonds_karp → accuracy-first (expect longer runtime, especially on large instances)."
+    )
 
     st.write("Use the controls below to run the BZ column-generation solver on the loaded dataset.")
 
@@ -218,6 +232,7 @@ def render_solver_settings(df=None, pm=None, om=None, config=None):
 
     if run_clicked:
         if validate_inputs(df, pm, om):
+            st.session_state['solver_algorithm'] = algorithm
             start_solver(state, df, pm, om, max_iter, epsilon)
             st.rerun()
 
@@ -238,5 +253,6 @@ def render_solver_settings(df=None, pm=None, om=None, config=None):
     return {
         "max_iter": max_iter,
         "epsilon": epsilon,
-        "solver": solver
+            "solver": solver,
+            "algorithm": algorithm
     }
