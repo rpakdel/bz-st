@@ -3,6 +3,7 @@ import os
 import sys
 from parsers.block_model import parse_blocks_file
 from parsers.precedence import parse_precedence_file
+from parsers.optimization import parse_optimization_file
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'minelib')
 
@@ -32,12 +33,14 @@ def load_dataset(dataset_name):
     cfg = config.get(dataset_name, {"blocks": f"{dataset_name}.blocks", "prec": f"{dataset_name}.prec", "attr_names": [], "color_by": None})
     blocks_path = os.path.join(path, cfg.get("blocks", ""))
     prec_path = os.path.join(path, cfg.get("prec", f"{dataset_name}.prec"))
+    upit_path = os.path.join(path, f"{dataset_name}.upit")
     
     if not os.path.exists(blocks_path):
-        return None, None, None
+        return None, None, None, None
     
     bm = parse_blocks_file(blocks_path, attribute_names=cfg["attr_names"])
     pm = parse_precedence_file(prec_path) if os.path.exists(prec_path) else None
+    om = parse_optimization_file(upit_path) if os.path.exists(upit_path) else None
     
     df = bm.to_dataframe()
-    return df, pm, cfg
+    return df, pm, om, cfg

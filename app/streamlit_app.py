@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from app.utils.data_loader import get_available_datasets, load_dataset
 from app.components.sidebar import render_dataset_selector, render_instance_summary
 from app.components.filters import render_filters
-from app.components.visualizer import render_3d_view
+from app.components.visualizer import render_3d_view, render_upit_analysis
 from app.components.precedence_view import render_precedence_view
 from app.components.solver_ui import render_solver_settings
 
@@ -26,11 +26,11 @@ if not available_datasets:
 selected_dataset = render_dataset_selector(available_datasets)
 
 # 2. Data Loading
-df, pm, config = load_dataset(selected_dataset)
+df, pm, om, config = load_dataset(selected_dataset)
 
 if df is not None:
     # 3. Instance Summary in Sidebar
-    render_instance_summary(df, config)
+    render_instance_summary(df, om, config)
 
     # 4. Filter Settings in Sidebar
     filtered_df = render_filters(df, config)
@@ -45,6 +45,11 @@ if df is not None:
         st.write(f"Showing {len(filtered_df)} blocks after filtering.")
         # 5. 3D Visualization
         render_3d_view(df, filtered_df, config, selected_dataset)
+
+        # UPIT Objective Visualization
+        if om:
+            with st.expander("📊 UPIT Objective Analysis"):
+                render_upit_analysis(om)
 
         # 6. Data Preview
         with st.expander("Preview Data"):
