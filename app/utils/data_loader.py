@@ -27,6 +27,16 @@ def load_dataset(dataset_name):
             "blocks": "kd.blocks",
             "attr_names": ["tonn", "blockvalue", "destination", "CU_pct", "process_profit"],
             "color_by": "blockvalue"
+            },
+            "marvin": {
+                "blocks": "marvin.blocks",
+                "attr_names": ["tonnage", "au_ppm", "cu_pct", "proc_profit_per_tonne"],
+                "color_by": "proc_profit_per_tonne"
+            },
+            "newman": {
+                "blocks": "newman1.blocks",
+                "attr_names": ["tonn", "blockvalue", "destination", "blocktype", "process_profit"],
+                "color_by": "blockvalue"
         }
     }
     
