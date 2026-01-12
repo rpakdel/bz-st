@@ -145,9 +145,9 @@ def poll_solver_status(state):
 def render_progress(state):
     if state.status == 'running':
         st.progress(state.progress)
-        st.write(f"Running... Iteration {state.iterations}, Objective: {state.objective:.2f}")
+        st.write(f"Running... Iteration {state.iterations}, Objective: {state.objective:,.0f}")
     elif state.status in ['completed', 'converged', 'max_iters', 'max_columns_reached']:
-        st.success(f"Finished! Status: {state.status}, Objective: {state.objective:.2f}, Iterations: {state.iterations}")
+        st.success(f"Finished! Status: {state.status}, Objective: {state.objective:,.0f}, Iterations: {state.iterations}")
     elif state.status == 'error':
         st.error(f"Error: {state.error_msg}")
     elif state.status == 'stopped':

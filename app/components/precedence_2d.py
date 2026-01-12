@@ -35,8 +35,6 @@ def render_precedence_2d(sub_G, df, target_block):
     for u, v in sub_G.edges():
         net.add_edge(u, v)
         
-    # Save and read
-    net.save_graph("precedence.html")
-    with open("precedence.html", 'r', encoding='utf-8') as f:
-        html = f.read()
+    # Render directly from generated HTML to avoid writing to disk
+    html = net.generate_html()
     components.html(html, height=600)
