@@ -28,22 +28,24 @@ def load_dataset(dataset_name):
             "attr_names": ["tonn", "blockvalue", "destination", "CU_pct", "process_profit"],
             "color_by": "blockvalue"
             },
-            "marvin": {
-                "blocks": "marvin.blocks",
-                "attr_names": ["tonnage", "au_ppm", "cu_pct", "proc_profit_per_tonne"],
-                "color_by": "proc_profit_per_tonne"
-            },
-            "newman": {
-                "blocks": "newman1.blocks",
-                "attr_names": ["tonn", "blockvalue", "destination", "blocktype", "process_profit"],
-                "color_by": "blockvalue"
+        "marvin": {
+            "blocks": "marvin.blocks",
+            "attr_names": ["tonnage", "au_ppm", "cu_pct", "proc_profit_per_tonne"],
+            "color_by": "proc_profit_per_tonne"
+        },
+        "newman": {
+            "blocks": "newman1.blocks",
+            "prec": "newman1.prec",
+            "upit": "newman1.upit",
+            "attr_names": ["tonn", "blockvalue", "destination", "blocktype", "process_profit"],
+            "color_by": "blockvalue"
         }
     }
     
     cfg = config.get(dataset_name, {"blocks": f"{dataset_name}.blocks", "prec": f"{dataset_name}.prec", "attr_names": [], "color_by": None})
     blocks_path = os.path.join(path, cfg.get("blocks", ""))
     prec_path = os.path.join(path, cfg.get("prec", f"{dataset_name}.prec"))
-    upit_path = os.path.join(path, f"{dataset_name}.upit")
+    upit_path = os.path.join(path, cfg.get("upit", f"{dataset_name}.upit"))
     
     if not os.path.exists(blocks_path):
         return None, None, None, None
