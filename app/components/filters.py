@@ -18,8 +18,9 @@ def render_filters(df, config):
     
     # Filter by value
     val_range = None
-    if config['color_by']:
+    if config and config.get('color_by') and config['color_by'] in df.columns:
         min_val, max_val = float(df[config['color_by']].min()), float(df[config['color_by']].max())
+        # Use a slider with floats; Streamlit handles float ranges
         val_range = st.sidebar.slider(f"{config['color_by']} Range", min_val, max_val, (min_val, max_val))
         
     # Apply filtering
@@ -32,7 +33,7 @@ def render_filters(df, config):
         (df['y'] <= y_range[1])
     )
     
-    if val_range:
+    if val_range is not None:
         mask &= (df[config['color_by']] >= val_range[0]) & (df[config['color_by']] <= val_range[1])
         
     filtered_df = df[mask]

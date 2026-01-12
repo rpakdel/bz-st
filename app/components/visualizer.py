@@ -70,7 +70,7 @@ def render_upit_analysis(om):
         labels={'x': 'Objective Value ($)', 'y': 'Number of Blocks'}
     )
     fig_hist.add_vline(x=0, line_dash="dash", line_color="red", annotation_text="Break-even")
-    st.plotly_chart(fig_hist, use_container_width=True)
+    st.plotly_chart(fig_hist, width='stretch')
     
     # Cumulative distribution
     st.write("#### Cumulative Objective Value")
@@ -89,4 +89,4 @@ def render_upit_analysis(om):
         xaxis_title="Number of Blocks (sorted by profit)",
         yaxis_title="Cumulative Profit ($)"
     )
-    st.plotly_chart(fig_cum, use_container_width=True)
+    st.plotly_chart(fig_cum, width='stretch')

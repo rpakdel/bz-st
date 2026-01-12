@@ -25,6 +25,31 @@ if not available_datasets:
 
 selected_dataset = render_dataset_selector(available_datasets)
 
+# 1.1 Dataset Change Reset logic
+if "last_selected_dataset" not in st.session_state:
+    st.session_state.last_selected_dataset = selected_dataset
+
+if st.session_state.last_selected_dataset != selected_dataset:
+    # Clear all solver-related session state
+    keys_to_clear = [
+        'solver_state', 
+        'solver_proc', 
+        'solver_start_time',
+        'bz_controller'  # from older versions just in case
+    ]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            if key == 'solver_proc':
+                try:
+                    if st.session_state[key].poll() is None:
+                        st.session_state[key].terminate()
+                except:
+                    pass
+            del st.session_state[key]
+    
+    st.session_state.last_selected_dataset = selected_dataset
+    st.rerun()
+
 # 2. Data Loading
 df, pm, om, config = load_dataset(selected_dataset)
 
@@ -60,6 +85,6 @@ if df is not None:
 
     with tab_bz:
         # 7. Solver Settings & Execution
-        render_solver_settings()
+        render_solver_settings(df=df, pm=pm, om=om, config=config)
 else:
     st.error(f"Could not load data for {selected_dataset}.")

@@ -25,6 +25,9 @@ class BZController:
         self.max_columns = max_columns
         self.profits = profits
 
+        # Stop flag for external cancellation
+        self._stop = False
+
         # Setup logger
         self.logger = logger or logging.getLogger(__name__)
         if not self.logger.handlers:
@@ -72,6 +75,16 @@ class BZController:
         self.history.clear()
 
         for it in range(self.max_iters):
+            # Check for external stop request
+            if getattr(self, '_stop', False):
+                self.logger.info("BZController: stop requested, terminating run loop at iter %d", it)
+                return {
+                    "status": "stopped",
+                    "iterations": it,
+                    "objective": getattr(self.master.solve(), 'objective_value', 0.0),
+                    "history": self.history,
+                    "time": time.time() - start_time,
+                }
             sol = self.master.solve()
 
             duals = sol.duals
@@ -158,6 +171,10 @@ class BZController:
             "history": self.history,
             "time": time.time() - start_time,
         }
+
+    def stop(self):
+        """Request the controller to stop at the next safe point in the loop."""
+        self._stop = True
 
     def get_history(self) -> List[Dict]:
         return list(self.history)
